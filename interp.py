@@ -27,7 +27,7 @@ def interpolate(filename):
 
     g = pv.read(filename)
     # either interpolate for weighted, or sample for direct
-    sampled = cylinder_grid.interpolate(g)
+    sampled = cylinder_grid.sample(g)
 
     coords = {"lon": theta, "depth": r}
     if cylindrical:
