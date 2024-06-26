@@ -8,7 +8,7 @@ cylindrical = True
 
 grid_shape = nx, ny, nz = 13, 11, 11
 if cylindrical:
-    grid_shape = nx, nz
+    grid_shape = nz, nx
 
 def interpolate(filename):
     theta = np.linspace(0, 360, nx+1)[:-1]
@@ -31,7 +31,7 @@ def interpolate(filename):
 
     coords = {"lon": theta, "depth": r}
     if cylindrical:
-        coord_list = ("lon", "depth")
+        coord_list = ("depth", "lon")
     else:
         coord_list = ("lon", "lat", "depth")
         coords["lat"] = phi - 90
