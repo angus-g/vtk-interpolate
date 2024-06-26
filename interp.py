@@ -6,18 +6,23 @@ import xarray as xr
 
 cylindrical = True
 
-grid_shape = nx, ny, nz = 13, 11, 11
+nx, ny, nz = 60, 45, 30
 if cylindrical:
     grid_shape = nz, nx
+else:
+    grid_shape = nz, nx, ny
 
 def interpolate(filename):
     theta = np.linspace(0, 360, nx+1)[:-1]
     phi = np.linspace(0, 180, ny)
     r = np.linspace(1.208, 2.208, nz)
 
-    x, y, z = np.meshgrid(np.radians(theta), 0 if cylindrical else phi, r)
-    x_cart = z * np.cos(x)
-    y_cart = z * np.sin(x)
+    x, y, z = np.meshgrid(np.radians(theta), 0 if cylindrical else np.radians(phi), r)
+    phi_factor = 1 if cylindrical else np.sin(y)
+
+    x_cart = z * np.cos(x) * phi_factor
+    y_cart = z * np.sin(x) * phi_factor
+
     if cylindrical:
         z_cart = y
     else:
@@ -33,7 +38,7 @@ def interpolate(filename):
     if cylindrical:
         coord_list = ("depth", "lon")
     else:
-        coord_list = ("lon", "lat", "depth")
+        coord_list = ("depth", "lon", "lat")
         coords["lat"] = phi - 90
 
     ds = xr.Dataset(coords=coords)
