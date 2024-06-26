@@ -8,7 +8,7 @@ cylindrical = True
 
 grid_shape = nx, ny, nz = 13, 11, 11
 if cylindrical:
-    grid_shape = nx, ny
+    grid_shape = nx, nz
 
 def interpolate(filename):
     theta = np.linspace(0, 360, nx+1)[:-1]
