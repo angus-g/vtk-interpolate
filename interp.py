@@ -45,7 +45,7 @@ def interpolate(filename):
 
     for name, data in sampled.point_data.items():
         # skip info arrays
-        if name.startswith("vtk"):
+        if name.startswith("vtk") and name != "vtkValidPointMask":
             continue
 
         if len(data.shape) > 1:
