@@ -1,21 +1,24 @@
-import sys
+import argparse
 
 import numpy as np
 import pyvista as pv
 import xarray as xr
 
-cylindrical = True
 
-nx, ny, nz = 60, 45, 30
-if cylindrical:
-    grid_shape = nz, nx
-else:
-    grid_shape = nz, nx, ny
+def interpolate(filename: str, *, radii: tuple[float, float], cylindrical: bool, dims: tuple[int, ...]):
+    if cylindrical:
+        nx, nz = dims
+        ny = 1
+        grid_shape = nz, nx
+    else:
+        nx, ny, nz = dims
+        grid_shape = nz, nx, ny
 
-def interpolate(filename):
+    r_min, r_max = radii
+
     theta = np.linspace(0, 360, nx+1)[:-1]
     phi = np.linspace(0, 180, ny)
-    r = np.linspace(1.208, 2.208, nz)
+    r = np.linspace(r_min, r_max, nz)
 
     x, y, z = np.meshgrid(np.radians(theta), 0 if cylindrical else np.radians(phi), r)
     phi_factor = 1 if cylindrical else np.sin(y)
@@ -69,5 +72,43 @@ def interpolate(filename):
 
 
 if __name__ == "__main__":
-    ds = interpolate(sys.argv[1])
-    ds.to_netcdf("interp.nc")
+    parser = argparse.ArgumentParser(
+        prog="interp",
+        description="Interpolate from unstructured VTK grids to netCDF",
+    )
+    parser.add_argument("filename")
+    parser.add_argument(
+        "-r", "--radii",
+        required=True,
+        help="Comma-separated minimum and maximum radii for the grid",
+    )
+    parser.add_argument(
+        "-o", "--output",
+        default="interp.nc",
+        help="Output filename, defaults to interp.nc",
+    )
+    parser.add_argument(
+        "-d", "--dims",
+        required=True,
+        help="Comma-separated list of dimensions; cylindrical: (nx,nz) or spherical: (nx,ny,nz)",
+    )
+
+    grid_group = parser.add_mutually_exclusive_group(required=True)
+    grid_group.add_argument(
+        "-c", "--cylindrical",
+        action="store_true",
+        help="Grid is a cylindrical annulus (2D)",
+    )
+    grid_group.add_argument(
+        "-s", "--spherical",
+        action="store_false",
+        help="Grid is 3D spherical",
+    )
+
+    args = parser.parse_args()
+
+    radii = [float(s) for s in args.radii.split(",")]
+    dims = [int(s) for s in args.dims.split(",")]
+
+    ds = interpolate(args.filename, radii=radii, cylindrical=args.cylindrical, dims=dims)
+    ds.to_netcdf(args.output)
