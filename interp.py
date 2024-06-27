@@ -39,7 +39,7 @@ def interpolate(filename):
         coord_list = ("depth", "lon")
     else:
         coord_list = ("depth", "lon", "lat")
-        coords["lat"] = phi - 90
+        coords["lat"] = 90 - phi
 
     ds = xr.Dataset(coords=coords)
 
